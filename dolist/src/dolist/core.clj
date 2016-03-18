@@ -11,6 +11,7 @@
 (defroutes app-routes
   (GET "/" [] "<h1>Ford to City: Drop Dead</h1>
                  <img src='uconst.gif' alt='Under Construction'</img>")
+  (GET "/about" [] "<center><h1>About Dolist</h1>Oh, just cutting my teeth on the world of Clojure.</center>")
   (route/not-found "Endpoint Not Found"))
 
 
