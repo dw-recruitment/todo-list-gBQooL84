@@ -1,6 +1,6 @@
-(ns do-list.core-test
+(ns dolist.core-test
   (:require [clojure.test :refer :all]
-            [do-list.core :refer :all]))
+            [dolist.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."
