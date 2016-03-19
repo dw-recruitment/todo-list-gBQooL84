@@ -23,14 +23,23 @@
             :dbname "dolist"
             :user "postgres"))
 
+
+(jdbc/with-db-connection [c db-pg]
+   (jdbc/execute! c ["create database dolist"]
+                  :transaction? false))
+
 (jdbc/db-do-commands db-do
+  "drop table if exists item"
+  "drop type if exists item_status_type"
+  "create type item_status_type as enum (':todo', ':done')"
   (jdbc/create-table-ddl :item
     [:sid :bigserial "PRIMARY KEY"]
     [:created :timestamptz "NOT NULL DEFAULT now()"]
     [:task :text "NOT NULL"]
-    [:status :text "NOT NULL DEFAULT 'todo'"])
+    [:status "item_status_type" "NOT NULL DEFAULT ':todo'"])
   "create index on item (sid)"
-  "create index on item (created)")
+  "create index on item (created)"
+  )
 
 (jdbc/insert! db-do :item [:task]
   ["register to vote"]
