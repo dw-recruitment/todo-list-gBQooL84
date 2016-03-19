@@ -43,16 +43,19 @@
   "create index on item (created)"
   )
 
-(jdbc/db-do-commands db-do
-  "truncate item")
 
-(jdbc/insert! db-do :item [:task :status]
-  ["register to vote" ":done"]
-  ["wash car" ":todo"]
-  ["puff up resume" ":done"]
-  ["wash dishes" ":done"]
-  ["finish PhD thesis" ":todo"]
-  ["buy new microwave" ":todo"]
-  ["file taxes" ":todo"]
-  ["call Mom" ":done"]
-  ["replace muffler" ":todo"])
+(do
+  (jdbc/db-do-commands db-do
+                       "truncate item")
+
+  (jdbc/insert! db-do :item [:task :status]
+                ["Take Clojure off resume" ":todo"]
+                ["Register to vote" ":done"]
+                ["Wash car" ":todo"]
+                ["Puff up resume" ":done"]
+                ["Wash dishes" ":done"]
+                ["Finish PhD thesis" ":todo"]
+                ["Buy new microwave" ":todo"]
+                ["File taxes" ":todo"]
+                ["Call Mom" ":done"]
+                ["Replace muffler" ":todo"]))

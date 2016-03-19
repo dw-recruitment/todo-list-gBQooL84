@@ -9,6 +9,8 @@
                  [ring/ring-core "1.4.0"]
                  [ring/ring-jetty-adapter "1.4.0"]
                  [ring.middleware.logger "0.5.0"]
+                 [org.clojure/java.jdbc "0.4.2"]
+                 [clj-postgresql "0.4.0"]
                  ]
   :plugins [[lein-ring "0.8.11"]]
   :ring {:handler dolist.core/loghandlerzz})
