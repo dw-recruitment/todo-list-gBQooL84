@@ -21,8 +21,9 @@
 (def db-do (pg/spec
             :host "localhost"
             :dbname "dolist"
-            :user "postgres"))
-
+            :user "postgres"
+            :stringtype "unspecified" ;; hack for enums
+            ))
 
 (jdbc/with-db-connection [c db-pg]
    (jdbc/execute! c ["create database dolist"]
@@ -36,12 +37,22 @@
     [:sid :bigserial "PRIMARY KEY"]
     [:created :timestamptz "NOT NULL DEFAULT now()"]
     [:task :text "NOT NULL"]
-    [:status "item_status_type" "NOT NULL DEFAULT ':todo'"])
+    [:status "item_status_type" "NOT NULL DEFAULT ':todo'"]
+    )
   "create index on item (sid)"
   "create index on item (created)"
   )
 
-(jdbc/insert! db-do :item [:task]
-  ["register to vote"]
-  ["file taxes"]
-  ["call Mom"])
+(jdbc/db-do-commands db-do
+  "truncate item")
+
+(jdbc/insert! db-do :item [:task :status]
+  ["register to vote" ":done"]
+  ["wash car" ":todo"]
+  ["puff up resume" ":done"]
+  ["wash dishes" ":done"]
+  ["finish PhD thesis" ":todo"]
+  ["buy new microwave" ":todo"]
+  ["file taxes" ":todo"]
+  ["call Mom" ":done"]
+  ["replace muffler" ":todo"])
