@@ -27,10 +27,13 @@
   {:fields [{:name :new-todo :type :text}]
    :submit-label "Save"
    :validations [[:required [:new-todo]]]
-   :values {:new-todo "test"}})
+   :values {:new-todo (str "test " (rand-int 32767))}})
 
 (defn submit-new-todo [params]
   (let [values (fp/parse-params todo-form params)]
+     (jdbc/query db-do
+        (str "insert into item (task) values ('"
+                            (:new-todo params) "') returning sid"))
     (html
      [:h1 "Just do it!"]
      [:pre (prn-str values)]
@@ -59,7 +62,8 @@
          [:div
           [:h1 "To Do"]
           [:ul
-           (for [r (jdbc/query db-do "select task,status from item")]
+           (for [r (jdbc/query db-do "select task,status from item
+                                        order by created")]
              [:li (str (:task r) ": " (subs (:status r) 1))])]
           ]
          (f/render-form todo-form)))
