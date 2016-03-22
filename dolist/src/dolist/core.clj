@@ -35,8 +35,8 @@
         (str "insert into item (task) values ('"
                             (:new-todo params) "') returning sid"))
     (html
-     [:h1 "Just do it!"]
-     [:pre (prn-str values)]
+     [:h1 (str "Just do "  (:new-todo params) "!")]
+     [:br][:br]
      [:p [:a {:href "/"} "Do more!"]])))
 
 (defroutes app-routes
