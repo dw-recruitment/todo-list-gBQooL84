@@ -12,6 +12,8 @@
             [clj-postgresql.core :as pg]
             [clojure.java.jdbc :as jdbc]
             [hiccup.core :as hic]
+            ;; [dommy.core :refer-macros [sel sel1] :as dom]
+            [dommy.core :as dom]
             [formative.core :as f]
             [formative.parse :as fp]
             ))
@@ -34,6 +36,8 @@
      (jdbc/query db-do
         (str "insert into item (task) values ('"
                             (:new-todo params) "') returning sid"))
+     (dom/set-text! (by-id "new-todo") "")
+     
     (html
      [:h1 (str "Just do "  (:new-todo params) "!")]
      [:br][:br]
@@ -45,23 +49,12 @@
        (html
          [:head
           [:link
-           {:crossorigin "anonymous",
-            :integrity
-            "sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7",
-            :href
-            "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css",
-            :rel "stylesheet"}]
-          "<!-- Optional theme -->"
+           {:href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css", :rel "stylesheet"}]
           [:link
-           {:crossorigin "anonymous",
-            :integrity
-            "sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r",
-            :href
-            "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css",
-            :rel "stylesheet"}]]
+           {:href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css", :rel "stylesheet"}]]
          [:div
-          [:h1 "To Do"]
-          [:ul
+          [:h1 "To Do!"]
+          [:ul {:id "my-todos"}
            (for [r (jdbc/query db-do "select task,status from item
                                         order by created")]
              [:li (str (:task r) ": " (subs (:status r) 1))])]
@@ -72,7 +65,7 @@
        (html [:center
               [:h1 "About To Do Or Not To Do"]
               "Oh, just cutting my teeth on Clojure"]))
-  (route/not-found "We do not recorgnize that address."))
+  (route/not-found "We do not have such a beast."))
 
 (def loghandlerzz
    (wrap-defaults app-routes site-defaults)
