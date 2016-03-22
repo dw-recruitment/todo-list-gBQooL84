@@ -13,7 +13,8 @@
             [clojure.java.jdbc :as jdbc]
             [hiccup.core :as hic]
             [formative.core :as f]
-            [formative.parse :as fp]))
+            [formative.parse :as fp]
+            ))
 
 (def db-do (pg/spec
             :host "localhost"
@@ -22,17 +23,22 @@
             :stringtype "unspecified" ;; hack for enums
             ))
 
-(def example-form
+(def todo-form
   {:fields [{:name :new-todo :type :text}]
-            
+   :submit-label "Save"
    :validations [[:required [:new-todo]]]
    :values {:new-todo "test"}})
 
+(defn submit-new-todo [params]
+  (let [values (fp/parse-params todo-form params)]
+    (html
+     [:h1 "Just do it!"]
+     [:pre (prn-str values)]
+     [:p [:a {:href "/"} "Do more!"]])))
+
 (defroutes app-routes
-  (GET "/" [] #_(html [:div
-                     [:h1 "To Do Or Not To Do?"]
-                     
-                   ])
+  (POST "/" [& params] (submit-new-todo params))
+  (GET "/" [] 
        (html
          [:head
           [:link
@@ -56,7 +62,7 @@
            (for [r (jdbc/query db-do "select task,status from item")]
              [:li (str (:task r) ": " (subs (:status r) 1))])]
           ]
-         (f/render-form example-form)))
+         (f/render-form todo-form)))
 
   (GET "/about" []
        (html [:center
@@ -70,3 +76,4 @@
      (logger/wrap-with-logger)
      (wrap-resource "public")
      ))
+
