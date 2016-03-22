@@ -1,0 +1,10 @@
+(page "about.html")
+
+
+(html
+  (head
+    (link :href "app.css" :rel "stylesheet"))
+  (body
+   (center
+    (h1 "About Do List Navigator")
+    (text "Wow, Hoplon sure is more transparent."))))

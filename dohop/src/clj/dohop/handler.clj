@@ -7,7 +7,10 @@
     [castra.middleware :as castra]))
 
 (c/defroutes app-routes
-  (c/GET "/" req (response/content-type (response/resource-response "index.html") "text/html"))
+  (c/GET "/" req (response/content-type
+                  (response/resource-response "index.html") "text/html"))
+  (c/GET "/about" req (response/content-type
+                  (response/resource-response "about.html") "text/html"))
   (route/resources "/" {:root ""}))
 
 (def app
