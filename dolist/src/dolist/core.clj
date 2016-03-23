@@ -42,20 +42,23 @@
      [:br][:br]
      [:p [:a {:href "/"} "Do more!"]])))
 
-(defn delpost [task]
+(defn delpost [do]
   (format "(function (e) {
      var r = new XMLHttpRequest(); 
-     r.open('GET', '/delpost?task=%s', true);
+     r.open('GET', '/delpost?sid=%s', true);
      r.dataType='html';
      r.onreadystatechange = function () {
 	if (r.readyState != 4 || r.status != 200) return; 
-	console.log('evt=' + e
-                    + ',r=' + r.responseText);
-        document.write(r.responseText);
+	console.log('evt=' + e + ',r=' + r.responseText);
+        var li = document.getElementById('do-%s');
+        li.getElementsByTagName('p')[0].className = '%s';
+        li.getElementsByTagName('button')[0].innerHTML = '%s';
      };
      console.log('sending '+r);
      r.send();
-   })(event);" task))
+   })(event);" (:sid do)(:sid do)
+     (if (= (:status do) ":todo") "done" "todo")
+     (if (= (:status do) ":todo") "undo" "complete")))
 
 
 (defroutes app-routes
@@ -77,18 +80,18 @@
            {:href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css", :rel "stylesheet"}]
           [:link
            {:href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css", :rel "stylesheet"}]]
-         [:div
+         [:div {:style "padding-left:96"}
           [:h1 "To Do Navigator 1"]
           [:ul {:id "my-todos"}
-           (for [r (jdbc/query db-do "select task,status from item
+           (for [r (jdbc/query db-do "select sid,task,status from item
                                         order by created")]
-             [:li {:id (:task r)} [:div 
-                      [:p {:class (subs (:status r) 1)
-                           :style "margin-right:12"}
-                       (:task r)]
-                      [:button {
-                                :onclick (delpost (:task r))}
-                       (if (= (:status r) ":todo") "complete" "undo")]]])]
+             [:li {:id (str "do-" (:sid r))}
+              [:div 
+               [:p {:class (subs (:status r) 1)
+                    :style "margin-right:12"}
+                (:task r)]
+               [:button {:onclick (delpost r)}
+                (if (= (:status r) ":todo") "complete" "undo")]]])]
           ]
          (f/render-form todo-form)))
   
