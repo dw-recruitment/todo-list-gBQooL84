@@ -42,8 +42,30 @@
      [:br][:br]
      [:p [:a {:href "/"} "Do more!"]])))
 
+(def delpost
+  "(function (e) {
+     var r = new XMLHttpRequest(); 
+     r.open('GET', '/delpost?a=1&b=2', true);
+     r.onreadystatechange = function () {
+	if (r.readyState != 4 || r.status != 200) return; 
+	console.log('evt=' + e
+                    + ',r=' + r.responseText);
+     };
+     console.log('sending '+r);
+     r.send();
+   })(event);")
+
+
 (defroutes app-routes
+  
+  (GET "/delpost" [& args]
+       (println (str (rest args) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"))
+       (html [:center
+              [:h1 "Delpost!"]
+              [:p (str "args=" args)]]))
+
   (POST "/" [& params] (submit-new-todo params))
+ 
   (GET "/" [] 
        (html
          [:head
@@ -52,15 +74,16 @@
           [:link
            {:href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css", :rel "stylesheet"}]]
          [:div
-          [:h1 "To Do Navigator"]
-          [:h4#bingo "Now you see it..."]
+          [:h1 "To Do Navigator 1"]
           [:ul {:id "my-todos"}
            (for [r (jdbc/query db-do "select task,status from item
                                         order by created")]
-             [:li (str (:task r) ": " (subs (:status r) 1))])]
+             [:li [:div 
+                   [:p (str (:task r) ": " (subs (:status r) 1))]
+                   [:button {:onclick delpost} "Fini"]]])]
           ]
          (f/render-form todo-form)))
-
+  
   (GET "/about" []
        (html [:center
               [:h1 "About To Do Or Not To Do"]
