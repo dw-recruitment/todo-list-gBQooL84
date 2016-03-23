@@ -42,14 +42,29 @@
      [:br][:br]
      [:p [:a {:href "/"} "Do more!"]])))
 
+;;; --- status toggling ------------------------
+
+(def toggle-status-template
+  "update item set status = case status
+                          when ':todo'::item_status_type
+                          then ':done'::item_status_type
+                          else ':todo'::item_status_type
+                         end
+	where sid = %s
+        returning status;")
+
+(defn toggle-todo-status [params]
+ (jdbc/query db-do (format toggle-status-template (:sid params)))
+ (html [:p "ignorable"]))
+
 (defn dostatus [do]
   (format "(function (e) {
      var r = new XMLHttpRequest(); 
-     r.open('GET', '/delpost?sid=%s', true);
+     r.open('GET', '/togglestatus?sid=%s', true);
      r.dataType='html';
      r.onreadystatechange = function () {
 	if (r.readyState != 4 || r.status != 200) return; 
-
+        console.log('response='+r.response);
         var li = document.getElementById('do-%s');
         var lip = li.getElementsByTagName('p')[0];
 
@@ -67,10 +82,7 @@
 
 (defroutes app-routes
   
-  (GET "/delpost" [& args]
-       (html [:center
-              [:h1 "Delpost!"]
-              [:p (str "args=" args)]]))
+  (GET "/togglestatus" [& args] (toggle-todo-status args))
 
   (POST "/" [& params] (submit-new-todo params))
  
