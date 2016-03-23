@@ -79,8 +79,13 @@
            (for [r (jdbc/query db-do "select task,status from item
                                         order by created")]
              [:li [:div 
-                   [:p (str (:task r) ": " (subs (:status r) 1))]
-                   [:button {:onclick delpost} "Fini"]]])]
+                   [:p {:style (str "display:inline-block"
+                                        (when (not= (:status r) ":todo") 
+                                          ";text-decoration:line-through"))}
+                    (:task r)]
+                   [:button {:style "display:inline-block;margin-left:9"
+                             :onclick delpost}
+                    (if (= (:status r) ":todo") "complete" "undo")]]])]
           ]
          (f/render-form todo-form)))
   
