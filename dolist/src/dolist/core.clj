@@ -61,7 +61,6 @@
 (defroutes app-routes
   
   (GET "/delpost" [& args]
-       (println (str (rest args) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"))
        (html [:center
               [:h1 "Delpost!"]
               [:p (str "args=" args)]]))
@@ -71,6 +70,9 @@
   (GET "/" [] 
        (html
          [:head
+          [:style "p.done {display:inline-block;text-decoration:line-through;}"]
+          [:style "p.todo {display:inline-block;font-weight:bold}"]
+          [:style "button {display:inline-block;}"]
           [:link
            {:href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css", :rel "stylesheet"}]
           [:link
@@ -80,14 +82,13 @@
           [:ul {:id "my-todos"}
            (for [r (jdbc/query db-do "select task,status from item
                                         order by created")]
-             [:li [:div 
-                   [:p {:style (str "display:inline-block"
-                                        (when (not= (:status r) ":todo") 
-                                          ";text-decoration:line-through"))}
-                    (:task r)]
-                   [:button {:style "display:inline-block;margin-left:9"
-                             :onclick (delpost (:task r))}
-                    (if (= (:status r) ":todo") "complete" "undo")]]])]
+             [:li {:id (:task r)} [:div 
+                      [:p {:class (subs (:status r) 1)
+                           :style "margin-right:12"}
+                       (:task r)]
+                      [:button {
+                                :onclick (delpost (:task r))}
+                       (if (= (:status r) ":todo") "complete" "undo")]]])]
           ]
          (f/render-form todo-form)))
   
