@@ -42,23 +42,27 @@
      [:br][:br]
      [:p [:a {:href "/"} "Do more!"]])))
 
-(defn delpost [do]
+(defn dostatus [do]
   (format "(function (e) {
      var r = new XMLHttpRequest(); 
      r.open('GET', '/delpost?sid=%s', true);
      r.dataType='html';
      r.onreadystatechange = function () {
 	if (r.readyState != 4 || r.status != 200) return; 
-	console.log('evt=' + e + ',r=' + r.responseText);
+
         var li = document.getElementById('do-%s');
-        li.getElementsByTagName('p')[0].className = '%s';
-        li.getElementsByTagName('button')[0].innerHTML = '%s';
+        var lip = li.getElementsByTagName('p')[0];
+
+        if (lip.className == 'todo') {
+           lip.className = 'done';
+           li.getElementsByTagName('button')[0].innerHTML = 'Undo';
+        } else {
+           lip.className = 'todo';
+           li.getElementsByTagName('button')[0].innerHTML = 'Complete';
+        }
      };
-     console.log('sending '+r);
      r.send();
-   })(event);" (:sid do)(:sid do)
-     (if (= (:status do) ":todo") "done" "todo")
-     (if (= (:status do) ":todo") "undo" "complete")))
+   })(event);" (:sid do)(:sid do)))
 
 
 (defroutes app-routes
@@ -75,23 +79,26 @@
          [:head
           [:style "p.done {display:inline-block;text-decoration:line-through;}"]
           [:style "p.todo {display:inline-block;font-weight:bold}"]
-          [:style "button {display:inline-block;}"]
+          [:style "button {width:72;display:inline-block}"]
           [:link
            {:href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css", :rel "stylesheet"}]
           [:link
            {:href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css", :rel "stylesheet"}]]
          [:div {:style "padding-left:96"}
-          [:h1 "To Do Navigator 1"]
-          [:ul {:id "my-todos"}
+          [:h1 "To Do Explorer"]
+          [:ul {:id "my-todos"
+                :style "list-style-type:none"}
            (for [r (jdbc/query db-do "select sid,task,status from item
                                         order by created")]
              [:li {:id (str "do-" (:sid r))}
               [:div 
+               [:button {:onclick (dostatus r)}
+                (if (= (:status r) ":todo") "complete" "undo")]
                [:p {:class (subs (:status r) 1)
-                    :style "margin-right:12"}
+                    :style "margin-left:12"}
                 (:task r)]
-               [:button {:onclick (delpost r)}
-                (if (= (:status r) ":todo") "complete" "undo")]]])]
+               
+               ]])]
           ]
          (f/render-form todo-form)))
   
