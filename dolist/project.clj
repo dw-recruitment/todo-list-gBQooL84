@@ -11,7 +11,6 @@
                  [ring.middleware.logger "0.5.0"]
                  [org.clojure/java.jdbc "0.4.2"]
                  [clj-postgresql "0.4.0"]
-                 [prismatic/dommy "1.1.0"]
                  [formative "0.8.8"]]
   :plugins [[lein-ring "0.8.11"]]
   :ring {:handler dolist.core/loghandlerzz})

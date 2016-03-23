@@ -9,7 +9,8 @@
                   [org.clojure/clojurescript "1.8.34"]
                   [pandeiro/boot-http        "0.7.3"]
                   [ring                      "1.4.0"]
-                  [ring/ring-defaults        "0.2.0"]]
+                  [ring/ring-defaults        "0.2.0"]
+                  [com.datomic/datomic-free  "0.9.5350"]]
   :resource-paths #{"assets" "src/clj"}
   :source-paths   #{"src/cljs" "src/hl"})
 

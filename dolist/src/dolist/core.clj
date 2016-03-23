@@ -36,8 +36,7 @@
      (jdbc/query db-do
         (str "insert into item (task) values ('"
                             (:new-todo params) "') returning sid"))
-     (dom/set-text! (by-id "new-todo") "")
-     
+    
     (html
      [:h1 (str "Just do "  (:new-todo params) "!")]
      [:br][:br]
@@ -53,7 +52,8 @@
           [:link
            {:href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css", :rel "stylesheet"}]]
          [:div
-          [:h1 "To Do!"]
+          [:h1 "To Do Navigator"]
+          [:h4#bingo "Now you see it..."]
           [:ul {:id "my-todos"}
            (for [r (jdbc/query db-do "select task,status from item
                                         order by created")]
