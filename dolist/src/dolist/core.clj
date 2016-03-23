@@ -42,18 +42,20 @@
      [:br][:br]
      [:p [:a {:href "/"} "Do more!"]])))
 
-(def delpost
-  "(function (e) {
+(defn delpost [task]
+  (format "(function (e) {
      var r = new XMLHttpRequest(); 
-     r.open('GET', '/delpost?a=1&b=2', true);
+     r.open('GET', '/delpost?task=%s', true);
+     r.dataType='html';
      r.onreadystatechange = function () {
 	if (r.readyState != 4 || r.status != 200) return; 
 	console.log('evt=' + e
                     + ',r=' + r.responseText);
+        document.write(r.responseText);
      };
      console.log('sending '+r);
      r.send();
-   })(event);")
+   })(event);" task))
 
 
 (defroutes app-routes
@@ -84,7 +86,7 @@
                                           ";text-decoration:line-through"))}
                     (:task r)]
                    [:button {:style "display:inline-block;margin-left:9"
-                             :onclick delpost}
+                             :onclick (delpost (:task r))}
                     (if (= (:status r) ":todo") "complete" "undo")]]])]
           ]
          (f/render-form todo-form)))
