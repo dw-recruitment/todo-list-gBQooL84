@@ -13,14 +13,16 @@
    [clojure.java.jdbc :as jdbc]
    [hiccup.core :as hic]))
 
-
 ;;; --- I/O ---------------------------------
 
 (def db-do (pg/spec
             :host "localhost"
             :dbname "dolist"
             :user "postgres"
-            :stringtype "unspecified" ;; hack for enums
+            ;; next option stops jdbc from helpfully sticking ::text
+            ;; coercion on strings, which then violates SQL enum
+            ;; we use to enforce that status is either :todo or :done
+            :stringtype "unspecified"
             ))
 
 ;;; --- landing page helpers ----------------------------------
@@ -29,23 +31,21 @@
   (format "(function (e) {
      var r = new XMLHttpRequest(); 
      r.open('GET', '/itemdelete?sid=%s', true);
-     r.dataType='html';
      r.onreadystatechange = function () {
 	if (r.readyState != 4 || r.status != 200) return; 
         window.location.reload(true);
      };
      r.send();
-   })(event);" (:sid do)(:sid do)))
+   })(event);" (:sid do)))
 
 (defn item-status-toggle-client [do]
   (format "(function (e) {
      var r = new XMLHttpRequest(); 
      r.open('GET', '/togglestatus?sid=%s', true);
-     r.dataType='html';
      r.onreadystatechange = function () {
 	if (r.readyState != 4 || r.status != 200) return; 
 
-        var li = document.getElementById('do-%s');
+        var li = document.getElementById('do-%1$s');
         var lip = li.getElementsByTagName('p')[0];
 
         if (lip.className == 'todo') {
@@ -57,7 +57,7 @@
         }
      };
      r.send();
-   })(event);" (:sid do)(:sid do)))
+   })(event);" (:sid do)))
 
 (def item-new-client
    "(function (e) {
@@ -79,6 +79,8 @@
      };
      r.send();
    })(event);")
+
+;;; --- landing page -----------------------------------
 
 (defn landing-page []
   (html
@@ -117,59 +119,41 @@
                    :value ""
                    :style "margin-left:18"}]]))
 
-
-;;    (f/render-form todo-form)]))
-
-;;; --- server-side route handlers ------------
-;;;
-;;; --- new item entry ------------------------
-
-(defn item-new-server [params]
-  (let [values params] ;; (fp/parse-params todo-form params)]
-     (jdbc/query db-do
-        (format "insert into item (task) values ('%s') returning sid"
-                (:task params)))
-     (html [:p "ignorable"]) ; ignored by client
-     ))
-
-;;; --- item deletion -------------------------
-
-
-(defn item-delete-server [params]
- (jdbc/query db-do (format "delete from item where sid = %s returning sid" (:sid params)))
-  (html [:p "ignorable"]))
-
-;;; --- status toggling ------------------------
+;;; --- server-side handlers -----------------------------
 
 (def toggle-status-template
   "update item set status = case status
-                          when ':todo'::item_status_type
-                          then ':done'::item_status_type
-                          else ':todo'::item_status_type
-                         end
+                              when ':todo'::item_status_type
+                              then ':done'::item_status_type
+                              else ':todo'::item_status_type
+                            end
 	where sid = %s
-        returning status;")
-
-(defn item-status-toggle-server [params]
- (jdbc/query db-do (format toggle-status-template (:sid params)))
- (html [:p "ignorable"]))
-
-
-;;; --- routes ------------------------------------------
+        returning status;") ;; can't get jdbc/execute! to work
 
 (defroutes app-routes
   (GET "/" []
        (landing-page))
+
   (GET "/about" []
        (html [:center
               [:h1 "About To Do Explorer"]
               "Oh, just cutting my teeth on Clojure"]))
-  (GET "/togglestatus" [& args]
-       (item-status-toggle-server args))
-  (GET "/itemdelete" [& args]
-       (item-delete-server args))
+
+  (GET "/togglestatus" [& params]
+       (jdbc/query db-do
+                   (format toggle-status-template
+                           (:sid params))))
+
+  (GET "/itemdelete" [& params]
+       (jdbc/query db-do
+                   (format "delete from item where sid = %s returning sid"
+                           (:sid params))))
+
   (GET "/itemnew" [& params]
-        (item-new-server params))
+       (jdbc/query db-do
+                   (format "insert into item (task) values ('%s') returning sid"
+                           (:task params))))
+
   (route/not-found "We do not have such a beast."))
 
 (def dolist-handler
