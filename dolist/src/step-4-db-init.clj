@@ -25,10 +25,6 @@
             :stringtype "unspecified" ;; hack for enums
             ))
 
-(jdbc/with-db-connection [c db-pg]
-   (jdbc/execute! c ["create database dolist"]
-                  :transaction? false))
-
 (jdbc/db-do-commands db-do
   "drop table if exists item"
   "drop type if exists item_status_type"
