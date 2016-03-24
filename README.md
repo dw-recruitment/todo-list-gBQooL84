@@ -1,7 +1,7 @@
 # dworx
 Democracy Works application assignment
 
-1. Commits have been tagged with step.<n> for convenient checkout, eg git checkout step.3
+1. Commits have been tagged with step.n for convenient checkout, eg git checkout step.3
 2. It just occcurred to me to copy ~/.lein/profiles.clj into the project root as lein-profiles.clj, but you will need to checkout master to find that.
 2. In tag step.1 do-list was the operative directory. Hmmm. But even that seems not to work.
 3. tag step.2 looks OK. The directions were to add a headline, so I picked a famous one that may have decided a presidential election. In the dolist directory: lein ring server (same from now on)
