@@ -1,16 +1,17 @@
 (ns dolist.core
-  (:use ring.util.response
-        ring.middleware.resource
-        ring.middleware.content-type
-        ring.middleware.not-modified
-        hiccup.core)
-  (:require [ring.middleware.logger :as logger]
-            [compojure.core :refer :all]
-            [compojure.route :as route]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
-            [clj-postgresql.core :as pg]
-            [clojure.java.jdbc :as jdbc]
-            [hiccup.core :as hic]))
+  (:use
+   ring.util.response
+   ring.middleware.resource
+   ring.middleware.content-type
+   ring.middleware.not-modified
+   hiccup.core)
+  (:require
+   [compojure.core :refer :all]
+   [compojure.route :as route]
+   [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
+   [clj-postgresql.core :as pg]
+   [clojure.java.jdbc :as jdbc]
+   [hiccup.core :as hic]))
 
 
 ;;; --- I/O ---------------------------------
@@ -23,12 +24,6 @@
             ))
 
 ;;; --- landing page helpers ----------------------------------
-(def todo-form
-  {:fields [{:name :to-do :type :text}]
-   :submit-label "Save"
-   :validations [[:required [:to-do]]]
-   :values {:to-do ""}
-   })
 
 (defn item-delete-client [do]
   (format "(function (e) {
@@ -134,7 +129,7 @@
      (jdbc/query db-do
         (format "insert into item (task) values ('%s') returning sid"
                 (:task params)))
-     (html [:p "post"]) ;; (landing-page)
+     (html [:p "ignorable"]) ; ignored by client
      ))
 
 ;;; --- item deletion -------------------------
@@ -142,7 +137,7 @@
 
 (defn item-delete-server [params]
  (jdbc/query db-do (format "delete from item where sid = %s returning sid" (:sid params)))
- (html [:p "boom"]))
+  (html [:p "ignorable"]))
 
 ;;; --- status toggling ------------------------
 
@@ -177,9 +172,5 @@
         (item-new-server params))
   (route/not-found "We do not have such a beast."))
 
-
-(def loghandlerzz
-  (wrap-defaults app-routes site-defaults)
-  #_ (-> handler
-         (logger/wrap-with-logger)
-         (wrap-resource "public")))
+(def dolist-handler
+  (wrap-defaults app-routes site-defaults))
