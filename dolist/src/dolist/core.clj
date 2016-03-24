@@ -3,17 +3,14 @@
         ring.middleware.resource
         ring.middleware.content-type
         ring.middleware.not-modified
-        hiccup.core
-        )
+        hiccup.core)
   (:require [ring.middleware.logger :as logger]
             [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [clj-postgresql.core :as pg]
             [clojure.java.jdbc :as jdbc]
-            [hiccup.core :as hic]
-            [formative.core :as f]
-            [formative.parse :as fp]))
+            [hiccup.core :as hic]))
 
 
 ;;; --- I/O ---------------------------------
@@ -39,14 +36,9 @@
      r.open('GET', '/itemdelete?sid=%s', true);
      r.dataType='html';
      r.onreadystatechange = function () {
-        console.log('rstate='+r.readyState
-                    +',status='+r.status);
 	if (r.readyState != 4 || r.status != 200) return; 
-        //console.log('reloading!!!!');
         window.location.reload(true);
      };
- 
-     console.log('deleting item sid = ' + %s);
      r.send();
    })(event);" (:sid do)(:sid do)))
 
@@ -57,7 +49,7 @@
      r.dataType='html';
      r.onreadystatechange = function () {
 	if (r.readyState != 4 || r.status != 200) return; 
-        console.log('response='+r.response);
+
         var li = document.getElementById('do-%s');
         var lip = li.getElementsByTagName('p')[0];
 
@@ -71,6 +63,27 @@
      };
      r.send();
    })(event);" (:sid do)(:sid do)))
+
+(def item-new-client
+   "(function (e) {
+     var code = (e.keyCode ? e.keyCode : e.which);
+     if (code !== 13) return;
+
+     var tasker = document.getElementById('task');
+     var task = tasker.value.trim();
+
+     if (!task.length) return;
+
+     var r = new XMLHttpRequest(); 
+     r.open('GET', '/itemnew?task='+task, true);
+     r.dataType='html';
+     r.onreadystatechange = function () {
+	if (r.readyState != 4 || r.status != 200) return; 
+        tasker.value='';
+        window.location.reload(true);
+     };
+     r.send();
+   })(event);")
 
 (defn landing-page []
   (html
@@ -102,18 +115,27 @@
          ]])]
     ]
    [:div {:style "padding-left:96"}
-    (f/render-form todo-form)]))
+     [:label {:for "task"} "What do we need to do?"]
+     [:input#task {:onkeypress item-new-client
+                   :type "text"
+                   :autofocus "autofocus"
+                   :value ""
+                   :style "margin-left:18"}]]))
+
+
+;;    (f/render-form todo-form)]))
 
 ;;; --- server-side route handlers ------------
 ;;;
 ;;; --- new item entry ------------------------
 
 (defn item-new-server [params]
-  (let [values (fp/parse-params todo-form params)]
+  (let [values params] ;; (fp/parse-params todo-form params)]
      (jdbc/query db-do
-        (str "insert into item (task) values ('"
-                            (:to-do params) "') returning sid"))
-    (landing-page)))
+        (format "insert into item (task) values ('%s') returning sid"
+                (:task params)))
+     (html [:p "post"]) ;; (landing-page)
+     ))
 
 ;;; --- item deletion -------------------------
 
@@ -151,7 +173,7 @@
        (item-status-toggle-server args))
   (GET "/itemdelete" [& args]
        (item-delete-server args))
-  (POST "/" [& params]
+  (GET "/itemnew" [& params]
         (item-new-server params))
   (route/not-found "We do not have such a beast."))
 
