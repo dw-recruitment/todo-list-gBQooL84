@@ -11,4 +11,4 @@
         :datomic {:install-location "~/dev/datomic-free-0.9.5350"}}
  :user {:plugins [[lein-datomic "0.2.0"]]
         :dependencies [[prismatic/dommy "1.1.0"]]
-        :datomic {:install-location "/home/Anonymous/dev/datomic-free-0.9.5350"}}}
+        :datomic {:install-location "~/dev/datomic-free-0.9.5350"}}}
